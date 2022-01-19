@@ -1,33 +1,77 @@
 import pygame
 import numpy as np
 
-#use one of the "cool effects" functions in addition 
-#of the black_and_white one
-def image_to_array(img):
+# put one of the 'cool effects' functions here
+def image_to_array(img):#  \/
 	return black_and_white(pygame.surfarray.array3d(img))
 	
 def array_to_image(array):
 	return pygame.surfarray.make_surface(array)
 
 #》~~~~~~~~~~>	Cool Effects 	<~~~~~~~~~~《
+
 def black_and_white(array):
 	return np.array([[ [sum(x)*0.3]*3 for x in y]for y in array])
-
-def filter(array, value): #the value needs to be a list of 3 numbers between 0 to 1, that define the percentage of each RGB argument to be left
-	return array*value #some good ones: (0.9, 0.8, 0.2), (0.2, 0.8, 0.9), (0.3,0.2,0.8)
-#if u use numbers greater than 1 in filter, the image gets a glitchy effect, preety poggers
 
 def invert(array):
 	return 255-array
 
+def vertical_gradient(array, color, invert=False):
+	color = np.array(color)
+	if invert:
+		len_x = len(array[0])
+		return np.array([[x-((len_x-idx_x)*color) for idx_x, x in enumerate(y)]for y in array])
+	else:
+		return np.array([[x-(idx_x*color) for idx_x, x in enumerate(y)]for y in array])
 
-#more functions will be added soon
+
+def horizontal_gradient(array, color, invert=False):
+	color = np.array(color)
+	if invert:
+		len_y = len(array)
+		return np.array([[x-((len_y-idx_y)*color) for x in y]for idx_y, y in enumerate(array)])
+	else:
+		return np.array([[x-(idx_y*color) for x in y]for idx_y, y in enumerate(array)])
+
+def pixel_art(array, size=4):
+	array2 = [[j for j in i] for i in array]
+	for i in range(len(array2)):
+		if i+size < len(array2):
+			for n in range(len(array2[i])):
+				if n + size < len(array2[i]):
+					
+					for j in range(size):
+						del array2[i][n+1]
+				else:
+					break
+			for j in range(size):
+				del array2[i+1]
+		else:
+			break
+	
+	return np.array(array2) #, dtype=object)
+
+# warning: while using one of the effects below,the image may get a glitchy effect, because when
+# the color value >= 255, pygame subtracts the number by 255 until its <= 255
+# and when the color is <= 0, pygame adds 255 to it until its >= 0.
+
+def filter(array, value):
+	return array*value #good ones: (0.9,0.8,0.2), (0.2,0.8,0.9), (0.3,0.2,0.8)
+
+def add(array, value):
+	return array+value
+
+def subtract(array, value):
+	return array-value
+
+def divide(array, value):
+	return array/value
+
+
 pygame.init()
 
-img = pygame.image.load('image.jpg') #here you put the name of the image, after saving it on the same folder as this file
-
+img = pygame.image.load('imagem_cores.jpg')
 pixels = image_to_array(img)
-output = array_to_image(pixels)
+new_img = array_to_image(pixels)
 
-pygame.image.save(output, 'output.jpg')
-pygame.quit()
+pygame.image.save(new_img, 'image.jpg')
